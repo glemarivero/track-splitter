@@ -9,6 +9,9 @@ from utils import separate_tracks
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
 
+# Set Streamlit layout to wide mode
+st.set_page_config(layout="wide")
+
 st.title("Audio Track Splitter")
 
 def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
@@ -67,6 +70,7 @@ def footer():
     .footer {
         position: fixed;
         bottom: 0;
+        left: 0;
         width: 100%;
         text-align: center;
         color: gray;
