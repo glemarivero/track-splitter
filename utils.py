@@ -13,6 +13,7 @@ This is only for separation with pre-trained models, not training!
 
 You can either upload files manually (slow) or link your Google Drive account.
 """
+import os
 import torch
 
 #@title Useful functions, don't forget to execute
@@ -72,7 +73,7 @@ def copy_process_streams(process: sp.Popen):
             std.write(buf)
             std.flush()
 
-def separate(inp=None, outp=None):
+def separate(inp=None, outp=None, ffmpeg_path=None):
     inp = inp or in_path
     inp = inp.replace(" ", "")
     outp = outp or out_path
@@ -88,7 +89,9 @@ def separate(inp=None, outp=None):
     if two_stems is not None:
         cmd += [f"--two-stems={two_stems}"]
     full_cmd = cmd + [inp]
-    p = sp.Popen(cmd + [inp], stdout=sp.PIPE, stderr=sp.PIPE)
+    env = os.environ.copy()
+    env["PATH"] = f"{ffmpeg_path}:{env['PATH']}"
+    p = sp.Popen(cmd + [inp], stdout=sp.PIPE, stderr=sp.PIPE, env=[])
 
     copy_process_streams(p)
     p.wait()

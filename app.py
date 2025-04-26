@@ -35,13 +35,10 @@ def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
     # Make executable
     os.chmod(ffmpeg_path, 0o755)
 
-    print(f"✅ ffmpeg installed at: {ffmpeg_path}")
     return ffmpeg_path
 
-ffmpeg_path = install_ffmpeg_from_url()
-
-# Optional: test it
-subprocess.run([ffmpeg_path, "-version"])
+ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+st.write(f"FFmpeg installed at: {ffmpeg_path}")
 
 @st.cache_resource
 def get_audio_base64(file_path):
@@ -76,11 +73,11 @@ if file_upload is not None:
     song = file_upload.name
     if st.sidebar.button("Split tracks"):
         path = save_uploaded_file(file_upload)
-        separate(path, OUTPUT_PATH)
+        separate(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
 else:
     song = track
     if st.sidebar.button("Split tracks"):
-        separate(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH)
+        separate(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
 
 # Convert both MP3 files to base64
 try:
