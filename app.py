@@ -10,7 +10,7 @@ AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
 
 # Set Streamlit layout to wide mode
-st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 
 st.title("Audio Track Splitter")
 
@@ -69,7 +69,7 @@ def footer():
     <style>
     .footer {
         position: fixed;
-        bottom: 0;
+        bottom: 10%;
         left: 0;
         width: 100%;
         text-align: center;
@@ -94,58 +94,65 @@ def footer():
     """, unsafe_allow_html=True)
 
 def display_audio(src_vocals, src_bass, src_drums, src_other):
-    # HTML player with responsive design
+    # Consolidated HTML and JavaScript for audio controls and playback
     html_code = f"""
     <style>
     .audio-controls {{
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
-        align-items: center;
-        margin-top: 2%;
+        gap: 5%; /* Adjusted to percentage */
+        margin-top: 5%; /* Adjusted to percentage */
     }}
-    .audio-controls label {{
-        margin-right: 2%;
-    }}
-    .audio-controls input[type="range"] {{
+    .audio-column {{
         flex: 1;
-        margin: 1% 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5%; /* Adjusted to percentage */
+        min-width: 45%; /* Ensures two columns */
     }}
-    @media (max-width: 768px) {{
-        .audio-controls {{
-            flex-direction: column;
-            align-items: flex-start;
-        }}
-        .audio-controls label {{
-            margin-bottom: 1%;
-        }}
+    .audio-control {{
+        width: 60%;
+        margin: 0 auto; /* Centers the control */
+        text-align: center;
     }}
     </style>
-
-    <audio id="vocals" src="{src_vocals}" preload="auto"></audio>
-    <audio id="bass" src="{src_bass}" preload="auto"></audio>
-    <audio id="drums" src="{src_drums}" preload="auto"></audio>
-    <audio id="other" src="{src_other}" preload="auto"></audio>
 
     <div>
         <button onclick="playAll()">▶️ Play</button>
         <button onclick="pauseAll()">⏸ Pause</button>
     </div>
 
-    <div style="margin-top: 2%;">
+    <div style="margin-top: 5%;"> <!-- Adjusted to percentage -->
         <label>Progress</label>
         <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
     </div>
 
     <div class="audio-controls">
-        <label>🎤 Vocals</label>
-        <input type="range" id="vol_vocals" min="0" max="1" step="0.01" value="1">
-        <label>🎸 Bass</label>
-        <input type="range" id="vol_bass" min="0" max="1" step="0.01" value="1">
-        <label>🥁 Drums</label>
-        <input type="range" id="vol_drums" min="0" max="1" step="0.01" value="1">
-        <label>🎶 Other</label>
-        <input type="range" id="vol_other" min="0" max="1" step="0.01" value="1">
+        <div class="audio-column">
+            <audio id="vocals" src="{src_vocals}" preload="auto"></audio>
+            <div class="audio-control">
+                <label>🎤 Vocals</label>
+                <input type="range" id="vol_vocals" min="0" max="1" step="0.01" value="1">
+            </div>
+            <audio id="bass" src="{src_bass}" preload="auto"></audio>
+            <div class="audio-control">
+                <label>🎸 Bass</label>
+                <input type="range" id="vol_bass" min="0" max="1" step="0.01" value="1">
+            </div>
+        </div>
+        <div class="audio-column">
+            <audio id="drums" src="{src_drums}" preload="auto"></audio>
+            <div class="audio-control">
+                <label>🥁 Drums</label>
+                <input type="range" id="vol_drums" min="0" max="1" step="0.01" value="1">
+            </div>
+            <audio id="other" src="{src_other}" preload="auto"></audio>
+            <div class="audio-control">
+                <label>🎶 Other</label>
+                <input type="range" id="vol_other" min="0" max="1" step="0.01" value="1">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -206,7 +213,7 @@ def display_audio(src_vocals, src_bass, src_drums, src_other):
     }});
     </script>
     """
-    return st.components.v1.html(html_code, height=400)
+    st.components.v1.html(html_code, height=400)
 
 def main():
   # Get all MP3 files in folder (without extension)
