@@ -13,70 +13,15 @@ This is only for separation with pre-trained models, not training!
 You can either upload files manually (slow) or link your Google Drive account.
 """
 import os
-import torch
-
-#@title Useful functions, don't forget to execute
-import sys
-import io
-from pathlib import Path
-import select
-from shutil import rmtree
-import subprocess as sp
-import sys
-from typing import Dict, Tuple, Optional, IO
-from types import SimpleNamespace as Namespace
-from pathlib import PosixPath
 from demucs.separate import main as demucs_main
-
-print(torch.cuda.is_available())
-
-# Customize the following options!
-model = "htdemucs"
-extensions = ["mp3", "wav", "ogg", "flac"]  # we will look for all those file types.
-two_stems = None   # only separate one stems from the rest, for instance
-# two_stems = "vocals"
-
-# Options for the output audio.
-mp3 = True
-mp3_rate = 320
-float32 = False  # output as float 32 wavs, unsused if 'mp3' is True.
-int24 = False    # output as int24 wavs, unused if 'mp3' is True.
-# You cannot set both `float32 = True` and `int24 = True` !!
+import streamlit as st
+import tqdm as tqdm_module  # Not from tqdm import tqdm!
 
 demucs_path = '.'
 
 in_path = f'{demucs_path}/inputs'
 out_path = f'{demucs_path}/demucs_separated/'
 
-def copy_process_streams(process: sp.Popen):
-    def raw(stream: Optional[IO[bytes]]) -> IO[bytes]:
-        assert stream is not None
-        if isinstance(stream, io.BufferedIOBase):
-            stream = stream.raw
-        return stream
-
-    p_stdout, p_stderr = raw(process.stdout), raw(process.stderr)
-    stream_by_fd: Dict[int, Tuple[IO[bytes], io.StringIO, IO[str]]] = {
-        p_stdout.fileno(): (p_stdout, sys.stdout),
-        p_stderr.fileno(): (p_stderr, sys.stderr),
-    }
-    fds = list(stream_by_fd.keys())
-
-    while fds:
-        # `select` syscall will wait until one of the file descriptors has content.
-        ready, _, _ = select.select(fds, [], [])
-        for fd in ready:
-            p_stream, std = stream_by_fd[fd]
-            raw_buf = p_stream.read(2 ** 16)
-            if not raw_buf:
-                fds.remove(fd)
-                continue
-            buf = raw_buf.decode()
-            std.write(buf)
-            std.flush()
-
-import streamlit as st
-import tqdm as tqdm_module  # Not from tqdm import tqdm!
 
 def call_function_with_streamlit_progress(func, *args, **kwargs):
     progress_bar = st.progress(0)
@@ -93,6 +38,9 @@ def call_function_with_streamlit_progress(func, *args, **kwargs):
                 progress = int((self.n / self.total) * 100)
                 progress_bar.progress(min(progress, 100))
                 progress_text.text(f"Progress: {progress}%")
+                if self.total == self.n:
+                    progress_bar.empty()
+                    progress_text.empty()
 
     try:
         # Monkey-patch

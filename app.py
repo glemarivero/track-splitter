@@ -103,7 +103,7 @@ html_code = f"""
 <audio id="other" src="{src_other}" preload="auto"></audio>
 
 <div>
-  <button onclick="playAll()">▶ Play</button>
+  <button onclick="playAll()">▶️ Play</button>
   <button onclick="pauseAll()">⏸ Pause</button>
 </div>
 
@@ -111,17 +111,20 @@ html_code = f"""
   <label>Progress</label>
   <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
 </div>
-
+  <p> </p>
+  <label> Adjust volume:</label>
+  <p> </p>
 <div style="margin-top: 10px;">
-  <label>Volume Vocals</label>
+  <label>🎤 Vocals</label>
   <input type="range" id="vol_vocals" min="0" max="1" step="0.01" value="1">
-  <label style="margin-left: 20px;">Volume Bass</label>
+  <label style="margin-left: 20px;">🎸 Bass</label>
   <input type="range" id="vol_bass" min="0" max="1" step="0.01" value="1">
 </div>
 <div style="margin-top: 10px;">
-  <label>Volume Drums</label>
+
+  <label>🥁 Drums</label>
   <input type="range" id="vol_drums" min="0" max="1" step="0.01" value="1">
-  <label style="margin-left: 20px;">Volume Other</label>
+  <label style="margin-left: 20px;">🎶 Other</label>
   <input type="range" id="vol_other" min="0" max="1" step="0.01" value="1">
 </div>
 
