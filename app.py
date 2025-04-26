@@ -13,8 +13,8 @@ def install_ffmpeg():
         print("✅ ffmpeg already installed")
     except Exception:
         print("🔧 Installing ffmpeg...")
-        subprocess.run(["apt-get", "update"], check=True)
-        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
+        subprocess.run(["sudo", "apt-get", "update"], check=True)
+        subprocess.run(["sudo", "apt-get", "install", "-y", "ffmpeg"], check=True)
         print("✅ ffmpeg installed")
 
 install_ffmpeg()
