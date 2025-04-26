@@ -3,7 +3,7 @@ import streamlit as st
 import base64
 from utils import separate
 
-st.title("Song tracks splitter")
+st.title("Audio Track Splitter")
 
 import subprocess
 
