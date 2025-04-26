@@ -5,7 +5,6 @@ import os
 import urllib.request
 import tarfile
 from utils import separate_tracks
-from demucs import separate
 
 st.title("Audio Track Splitter")
 
@@ -77,7 +76,7 @@ if file_upload is not None:
 else:
     song = track
     if st.button("Split tracks"):
-        separate(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
+        separate_tracks(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
 
 # Convert both MP3 files to base64
 try:
