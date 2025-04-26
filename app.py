@@ -203,7 +203,6 @@ def main():
       other_b64 = get_audio_base64(f"separated/htdemucs/{song}/other.mp3")
   except Exception:
       exists = False
-      st.stop()
   if exists:
     st.header(song)
     # Create base64 sources
