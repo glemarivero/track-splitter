@@ -1,2 +1,1 @@
-streamlit
-git+https://github.com/adefossez/demucs.git
+git+https://github.com/adefossez/demucs.git@main
