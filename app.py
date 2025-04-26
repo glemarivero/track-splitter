@@ -11,7 +11,7 @@ def install_ffmpeg():
     try:
         subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.DEVNULL)
         print("✅ ffmpeg already installed")
-    except subprocess.CalledProcessError:
+    except Exception:
         print("🔧 Installing ffmpeg...")
         subprocess.run(["apt-get", "update"], check=True)
         subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
