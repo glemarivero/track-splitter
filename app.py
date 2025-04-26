@@ -62,26 +62,32 @@ def save_uploaded_file(uploaded_file, save_dir="inputs"):
 
 
 def footer():
-  return st.markdown("""
+    return st.markdown("""
     <style>
     .footer {
-      position: fixed;
-      bottom: 0;
-      width: 45%;
-      text-align: center;
-      color: gray;
-      padding: 10px;
-      background-color: rgba(240, 240, 240, 0.9);
-      font-size: 14px;
-      border-top: 1px solid #ddd;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        color: gray;
+        padding: 1%;
+        background-color: rgba(240, 240, 240, 0.9);
+        font-size: 1rem;
+        border-top: 0.1rem solid #ddd;
+    }
+    @media (max-width: 768px) {
+        .footer {
+            font-size: 0.9rem;
+            padding: 2%;
+        }
     }
     </style>
 
     <div class="footer">
-      Made with ❤️ by Gabriel Lema<br>
-      Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank">Demucs</a> for audio track separation.
+        Made with ❤️ by Gabriel Lema<br>
+        Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank">Demucs</a> for audio track separation.
     </div>
-  """, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 def display_audio(src_vocals, src_bass, src_drums, src_other):
     # HTML player with responsive design
@@ -92,14 +98,14 @@ def display_audio(src_vocals, src_bass, src_drums, src_other):
         flex-wrap: wrap;
         justify-content: space-between;
         align-items: center;
-        margin-top: 10px;
+        margin-top: 2%;
     }}
     .audio-controls label {{
-        margin-right: 10px;
+        margin-right: 2%;
     }}
     .audio-controls input[type="range"] {{
         flex: 1;
-        margin: 5px 0;
+        margin: 1% 0;
     }}
     @media (max-width: 768px) {{
         .audio-controls {{
@@ -107,7 +113,7 @@ def display_audio(src_vocals, src_bass, src_drums, src_other):
             align-items: flex-start;
         }}
         .audio-controls label {{
-            margin-bottom: 5px;
+            margin-bottom: 1%;
         }}
     }}
     </style>
@@ -122,7 +128,7 @@ def display_audio(src_vocals, src_bass, src_drums, src_other):
         <button onclick="pauseAll()">⏸ Pause</button>
     </div>
 
-    <div style="margin-top: 10px;">
+    <div style="margin-top: 2%;">
         <label>Progress</label>
         <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
     </div>
