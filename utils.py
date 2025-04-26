@@ -16,6 +16,7 @@ You can either upload files manually (slow) or link your Google Drive account.
 import torch
 
 #@title Useful functions, don't forget to execute
+import sys
 import io
 from pathlib import Path
 import select
@@ -77,7 +78,7 @@ def separate(inp=None, outp=None):
     outp = outp or out_path
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    cmd = ["python3", "-m", "demucs.separate", "-o", str(outp), "-n", model, "--device", device]
+    cmd = [f"{sys.executable}", "-m", "demucs.separate", "-o", str(outp), "-n", model, "--device", device]
     if mp3:
         cmd += ["--mp3", f"--mp3-bitrate={mp3_rate}"]
     if float32:
