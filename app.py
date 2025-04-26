@@ -84,98 +84,119 @@ def footer():
   """, unsafe_allow_html=True)
 
 def display_audio(src_vocals, src_bass, src_drums, src_other):
-  # HTML player
-  html_code = f"""
-  <audio id="vocals" src="{src_vocals}" preload="auto"></audio>
-  <audio id="bass" src="{src_bass}" preload="auto"></audio>
-  <audio id="drums" src="{src_drums}" preload="auto"></audio>
-  <audio id="other" src="{src_other}" preload="auto"></audio>
-
-  <div>
-    <button onclick="playAll()">▶️ Play</button>
-    <button onclick="pauseAll()">⏸ Pause</button>
-  </div>
-
-  <div style="margin-top: 10px;">
-    <label>Progress</label>
-    <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
-  </div>
-    <p> </p>
-    <label> Adjust volume:</label>
-    <p> </p>
-  <div style="margin-top: 10px;">
-    <label>🎤 Vocals</label>
-    <input type="range" id="vol_vocals" min="0" max="1" step="0.01" value="1">
-    <label style="margin-left: 20px;">🎸 Bass</label>
-    <input type="range" id="vol_bass" min="0" max="1" step="0.01" value="1">
-  </div>
-  <div style="margin-top: 10px;">
-
-    <label>🥁 Drums</label>
-    <input type="range" id="vol_drums" min="0" max="1" step="0.01" value="1">
-    <label style="margin-left: 20px;">🎶 Other</label>
-    <input type="range" id="vol_other" min="0" max="1" step="0.01" value="1">
-  </div>
-
-  <script>
-  const vocals = document.getElementById("vocals");
-  const bass = document.getElementById("bass");
-  const drums = document.getElementById("drums");
-  const other = document.getElementById("other");
-  const seekbar = document.getElementById("seekbar");
-  const vol_vocals = document.getElementById("vol_vocals");
-  const vol_bass = document.getElementById("vol_bass");
-  const vol_drums = document.getElementById("vol_drums");
-  const vol_other = document.getElementById("vol_other");
-
-  function playAll() {{
-    const t = Math.min(vocals.duration || 0, bass.duration || 0, drums.duration || 0, other.duration || 0);
-    seekbar.max = t;
-    vocals.play();
-    bass.play();
-    drums.play();
-    other.play();
-  }}
-
-  function pauseAll() {{
-    vocals.pause();
-    bass.pause();
-    drums.pause();
-    other.pause();
-  }}
-
-  setInterval(() => {{
-    if (!vocals.paused && !bass.paused && !drums.paused && !other.paused) {{
-      const pos = Math.min(vocals.currentTime, bass.currentTime, drums.currentTime, other.currentTime);
-      seekbar.value = pos;
+    # HTML player with responsive design
+    html_code = f"""
+    <style>
+    .audio-controls {{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
     }}
-  }}, 100);
+    .audio-controls label {{
+        margin-right: 10px;
+    }}
+    .audio-controls input[type="range"] {{
+        flex: 1;
+        margin: 5px 0;
+    }}
+    @media (max-width: 768px) {{
+        .audio-controls {{
+            flex-direction: column;
+            align-items: flex-start;
+        }}
+        .audio-controls label {{
+            margin-bottom: 5px;
+        }}
+    }}
+    </style>
 
-  seekbar.addEventListener("input", () => {{
-    vocals.currentTime = seekbar.value;
-    bass.currentTime = seekbar.value;
-    drums.currentTime = seekbar.value;
-    other.currentTime = seekbar.value;
-  }});
+    <audio id="vocals" src="{src_vocals}" preload="auto"></audio>
+    <audio id="bass" src="{src_bass}" preload="auto"></audio>
+    <audio id="drums" src="{src_drums}" preload="auto"></audio>
+    <audio id="other" src="{src_other}" preload="auto"></audio>
 
-  vol_vocals.addEventListener("input", () => {{
-    vocals.volume = vol_vocals.value;
-  }});
+    <div>
+        <button onclick="playAll()">▶️ Play</button>
+        <button onclick="pauseAll()">⏸ Pause</button>
+    </div>
 
-  vol_bass.addEventListener("input", () => {{
-    bass.volume = vol_bass.value;
-  }});
+    <div style="margin-top: 10px;">
+        <label>Progress</label>
+        <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
+    </div>
 
-  vol_drums.addEventListener("input", () => {{
-    drums.volume = vol_drums.value;
-  }});
+    <div class="audio-controls">
+        <label>🎤 Vocals</label>
+        <input type="range" id="vol_vocals" min="0" max="1" step="0.01" value="1">
+        <label>🎸 Bass</label>
+        <input type="range" id="vol_bass" min="0" max="1" step="0.01" value="1">
+        <label>🥁 Drums</label>
+        <input type="range" id="vol_drums" min="0" max="1" step="0.01" value="1">
+        <label>🎶 Other</label>
+        <input type="range" id="vol_other" min="0" max="1" step="0.01" value="1">
+    </div>
 
-  vol_other.addEventListener("input", () => {{
-    other.volume = vol_other.value;
-  }});
-  </script>
-  """
-  return st.components.v1.html(html_code, height=350)
+    <script>
+    const vocals = document.getElementById("vocals");
+    const bass = document.getElementById("bass");
+    const drums = document.getElementById("drums");
+    const other = document.getElementById("other");
+    const seekbar = document.getElementById("seekbar");
+    const vol_vocals = document.getElementById("vol_vocals");
+    const vol_bass = document.getElementById("vol_bass");
+    const vol_drums = document.getElementById("vol_drums");
+    const vol_other = document.getElementById("vol_other");
+
+    function playAll() {{
+        const t = Math.min(vocals.duration || 0, bass.duration || 0, drums.duration || 0, other.duration || 0);
+        seekbar.max = t;
+        vocals.play();
+        bass.play();
+        drums.play();
+        other.play();
+    }}
+
+    function pauseAll() {{
+        vocals.pause();
+        bass.pause();
+        drums.pause();
+        other.pause();
+    }}
+
+    setInterval(() => {{
+        if (!vocals.paused && !bass.paused && !drums.paused && !other.paused) {{
+            const pos = Math.min(vocals.currentTime, bass.currentTime, drums.currentTime, other.currentTime);
+            seekbar.value = pos;
+        }}
+    }}, 100);
+
+    seekbar.addEventListener("input", () => {{
+        vocals.currentTime = seekbar.value;
+        bass.currentTime = seekbar.value;
+        drums.currentTime = seekbar.value;
+        other.currentTime = seekbar.value;
+    }});
+
+    vol_vocals.addEventListener("input", () => {{
+        vocals.volume = vol_vocals.value;
+    }});
+
+    vol_bass.addEventListener("input", () => {{
+        bass.volume = vol_bass.value;
+    }});
+
+    vol_drums.addEventListener("input", () => {{
+        drums.volume = vol_drums.value;
+    }});
+
+    vol_other.addEventListener("input", () => {{
+        other.volume = vol_other.value;
+    }});
+    </script>
+    """
+    return st.components.v1.html(html_code, height=400)
 
 def main():
   # Get all MP3 files in folder (without extension)
