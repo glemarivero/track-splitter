@@ -80,6 +80,7 @@ import tqdm as tqdm_module  # Not from tqdm import tqdm!
 
 def call_function_with_streamlit_progress(func, *args, **kwargs):
     progress_bar = st.progress(0)
+    progress_text = st.empty()
 
     # Save the real tqdm
     real_tqdm = tqdm_module.tqdm
@@ -91,6 +92,7 @@ def call_function_with_streamlit_progress(func, *args, **kwargs):
             if self.total:
                 progress = int((self.n / self.total) * 100)
                 progress_bar.progress(min(progress, 100))
+                progress_text.text(f"Progress: {progress}%")
 
     try:
         # Monkey-patch
