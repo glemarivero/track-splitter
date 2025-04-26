@@ -1,16 +1,13 @@
 import os
 import streamlit as st
 import base64
-from utils import separate
-
-st.title("Audio Track Splitter")
-
-import subprocess
-
 import os
-import subprocess
 import urllib.request
 import tarfile
+from utils import separate_tracks
+from demucs import separate
+
+st.title("Audio Track Splitter")
 
 def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
     if os.path.exists("ffmpeg_bin/ffmpeg-7.0.2-amd64-static"):
@@ -68,20 +65,19 @@ OUTPUT_PATH = "separated"
 mp3_files = [f[:-4] for f in os.listdir(AUDIO_DIR) if f.endswith(".mp3")]
 
 # Streamlit dropdowns
-track = st.sidebar.selectbox("Audio file", mp3_files, key="audio1")
-file_upload = st.sidebar.file_uploader("Choose your own song!")
+track = st.selectbox("Audio file", mp3_files, key="audio1")
+file_upload = st.file_uploader("Choose your own song!")
 
 if file_upload is not None:
     song = file_upload.name
-    if st.sidebar.button("Split tracks"):
+    song = song.replace(" ", "_")[:-4]  # Remove .mp3 extension"]
+    if st.button("Split tracks"):
         path = save_uploaded_file(file_upload)
-        separate(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
-        st.rerun()
+        separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
 else:
     song = track
-    if st.sidebar.button("Split tracks"):
+    if st.button("Split tracks"):
         separate(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
-        st.rerun()
 
 # Convert both MP3 files to base64
 try:
@@ -93,6 +89,7 @@ except Exception:
     st.stop()
 
 
+st.header(song)
 # Create base64 sources
 src_vocals = f"data:audio/mp3;base64,{vocals_b64}"
 src_bass = f"data:audio/mp3;base64,{bass_b64}"
