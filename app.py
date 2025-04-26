@@ -1,10 +1,23 @@
-import demucs
 import os
 import streamlit as st
 import base64
 from utils import separate
 
 st.title("Song tracks splitter")
+
+import subprocess
+
+def install_ffmpeg():
+    try:
+        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.DEVNULL)
+        print("✅ ffmpeg already installed")
+    except subprocess.CalledProcessError:
+        print("🔧 Installing ffmpeg...")
+        subprocess.run(["apt-get", "update"], check=True)
+        subprocess.run(["apt-get", "install", "-y", "ffmpeg"], check=True)
+        print("✅ ffmpeg installed")
+
+install_ffmpeg()
 
 @st.cache_resource
 def get_audio_base64(file_path):
