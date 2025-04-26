@@ -13,6 +13,8 @@ import urllib.request
 import tarfile
 
 def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
+    if os.path.exists("ffmpeg_bin/ffmpeg-7.0.2-amd64-static"):
+        return "ffmpeg_bin/ffmpeg-7.0.2-amd64-static/ffmpeg"
     url = "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
     tar_path = "ffmpeg.tar.xz"
 
@@ -38,7 +40,6 @@ def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
     return ffmpeg_path
 
 ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-st.write(f"FFmpeg installed at: {ffmpeg_path}")
 
 @st.cache_resource
 def get_audio_base64(file_path):
@@ -51,7 +52,8 @@ def get_base64_from_file(file):
     return base64.b64encode(data).decode()
 
 def save_uploaded_file(uploaded_file, save_dir="inputs"):
-    save_path = os.path.join(save_dir, uploaded_file.name)
+    file_name = uploaded_file.name.replace(" ", "_")
+    save_path = os.path.join(save_dir, file_name)
     if os.path.exists(save_path):
         return save_path
     os.makedirs(save_dir, exist_ok=True)
