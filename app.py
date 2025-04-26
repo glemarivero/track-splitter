@@ -7,17 +7,41 @@ st.title("Song tracks splitter")
 
 import subprocess
 
-def install_ffmpeg():
-    try:
-        subprocess.run(["ffmpeg", "-version"], check=True, stdout=subprocess.DEVNULL)
-        print("✅ ffmpeg already installed")
-    except Exception:
-        print("🔧 Installing ffmpeg...")
-        subprocess.run(["sudo", "apt-get", "update"], check=True)
-        subprocess.run(["sudo", "apt-get", "install", "-y", "ffmpeg"], check=True)
-        print("✅ ffmpeg installed")
+import os
+import subprocess
+import urllib.request
+import tarfile
 
-install_ffmpeg()
+def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
+    url = "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
+    tar_path = "ffmpeg.tar.xz"
+
+    # Create install dir
+    os.makedirs(install_dir, exist_ok=True)
+
+    # Download the file
+    print("⬇️ Downloading ffmpeg static binary...")
+    urllib.request.urlretrieve(url, tar_path)
+
+    # Extract the archive
+    print("📦 Extracting...")
+    with tarfile.open(tar_path, "r:xz") as tar:
+        tar.extractall(path=install_dir)
+
+    # Find the ffmpeg binary inside the extracted folder
+    extracted_dir = next(os.path.join(install_dir, d) for d in os.listdir(install_dir) if d.startswith("ffmpeg"))
+    ffmpeg_path = os.path.join(extracted_dir, "ffmpeg")
+
+    # Make executable
+    os.chmod(ffmpeg_path, 0o755)
+
+    print(f"✅ ffmpeg installed at: {ffmpeg_path}")
+    return ffmpeg_path
+
+ffmpeg_path = install_ffmpeg_from_url()
+
+# Optional: test it
+subprocess.run([ffmpeg_path, "-version"])
 
 @st.cache_resource
 def get_audio_base64(file_path):
