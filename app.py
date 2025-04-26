@@ -193,8 +193,6 @@ def main():
           separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
   else:
       song = track
-      if st.button("Split tracks"):
-          separate_tracks(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
 
   # Convert both MP3 files to base64
   exists = True
