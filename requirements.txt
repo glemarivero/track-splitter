@@ -1,1 +1,2 @@
 git+https://github.com/adefossez/demucs.git@main
+numpy==1.24.4
