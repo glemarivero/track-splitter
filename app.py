@@ -76,10 +76,12 @@ if file_upload is not None:
     if st.sidebar.button("Split tracks"):
         path = save_uploaded_file(file_upload)
         separate(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
+        st.rerun()
 else:
     song = track
     if st.sidebar.button("Split tracks"):
         separate(f"{AUDIO_DIR}/{song}.mp3", OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
+        st.rerun()
 
 # Convert both MP3 files to base64
 try:
