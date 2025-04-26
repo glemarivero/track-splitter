@@ -91,7 +91,7 @@ def separate(inp=None, outp=None, ffmpeg_path=None):
     full_cmd = cmd + [inp]
     env = os.environ.copy()
     env["PATH"] = f"{ffmpeg_path}:{env['PATH']}"
-    p = sp.Popen(cmd + [inp], stdout=sp.PIPE, stderr=sp.PIPE, env=[])
+    p = sp.Popen(cmd + [inp], stdout=sp.PIPE, stderr=sp.PIPE, env=env)
 
     copy_process_streams(p)
     p.wait()
