@@ -29,7 +29,7 @@ def save_uploaded_file(uploaded_file, save_dir=AUDIO_DIR):
 
 
 def footer():
-    return st.markdown("""
+    st.markdown("""
     <style>
     .footer {
         position: fixed;
@@ -48,6 +48,9 @@ def footer():
             font-size: 0.9rem;
             padding: 2%;
         }
+    }
+    .audio-section {
+        margin-bottom: 10px; /* Reduce space below audio controllers */
     }
     </style>
     <div class="footer">
@@ -94,18 +97,18 @@ def main():
       exists = False
   if exists:
     st.header(song)
-    display_audio(stems=loaded_stems, model=model)
-    cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
-    for i, stem in enumerate(stems):
-      with open(get_file_path(song, stem, model=model), "rb") as fid:
-        track_bytes = fid.read()
-      with cols[i % 2]:  # Alternate between the two columns
+    st.markdown('<div class="audio-section">', unsafe_allow_html=True)  # Start audio section
+    display_audio(song=song, stems=loaded_stems, model=model)
+    st.markdown('</div>', unsafe_allow_html=True)  # End audio section
+    stem_to_download = st.selectbox("Download", options=[""] + stems, key="download")
+    if stem_to_download:
         st.download_button(
-          label=f"Download {stem.capitalize()}",
-          data=track_bytes,
-          file_name=f"{song} - {stem}.mp3",
-          mime="audio/mp3"
+            label="Download",
+            data=loaded_stems[stem_to_download],
+            file_name=f"{song} - {stem_to_download}.mp3",
+            mime="audio/mp3",
         )
+
   footer()
 
 

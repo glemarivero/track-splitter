@@ -9,7 +9,7 @@ STEMS_EMOJIS = {
     "guitar": "🎸",
 }
 
-def display_audio(stems, model):
+def display_audio(song, stems, model):
     # Consolidated HTML and JavaScript for audio controls and playback
     src_stems = {key: f"data:audio/mp3;base64,{value}" for key, value in stems.items()}
 
@@ -20,7 +20,9 @@ def display_audio(stems, model):
             <audio id="{stem}" src="{src}" preload="auto"></audio>
             <div class="audio-control">
                 <label>{STEMS_EMOJIS[stem]} {stem.capitalize()}</label>
-                <input type="range" id="vol_{stem}" min="0" max="1" step="0.01" value="1">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <input type="range" id="vol_{stem}" min="0" max="1" step="0.01" value="1">
+                </div>
             </div>
         </div>
         """
@@ -113,4 +115,4 @@ def display_audio(stems, model):
     }});
     </script>
     """
-    st.components.v1.html(html_code, height=600 if model == "htdemucs_6s" else 400)
+    st.components.v1.html(html_code, height=400 if len(stems) > 4 else 300, scrolling=True)
