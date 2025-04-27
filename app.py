@@ -2,7 +2,7 @@ import os
 import streamlit as st
 import base64
 import os
-from controls import display_audio
+from controls_refactored import display_audio
 from utils import install_ffmpeg_from_url, get_file_path, separate_tracks
 
 AUDIO_DIR = "inputs"
@@ -57,11 +57,14 @@ def footer():
     </div>
     """, unsafe_allow_html=True)
 
-
+MODELS = {
+    "htdemucs": "HTDemucs - 4 tracks",
+    "htdemucs_6s": "HTDemucs - 6 tracks",
+}
 
 def main():
   # Get all MP3 files in folder (without extension)
-  model = st.selectbox("Choose a Demucs model", ["htdemucs", "htdemucs_6s"], key="model")
+  model = st.selectbox("Choose a Demucs model", options=list(MODELS.keys()), format_func=lambda model: MODELS[model])
   if model == "htdemucs":
      stems = ["vocals", "bass", "drums", "other"]
   else:
@@ -89,7 +92,7 @@ def main():
       exists = False
   if exists:
     st.header(song)
-    display_audio(model=model, **loaded_stems)
+    display_audio(stems=loaded_stems, model=model)
     cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
     for i, stem in enumerate(STEMS):
       with open(get_file_path(song, stem, model=model), "rb") as fid:
