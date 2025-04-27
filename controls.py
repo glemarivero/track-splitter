@@ -9,6 +9,7 @@ STEMS_EMOJIS = {
     "guitar": "🎸",
 }
 
+@st.cache_resource
 def display_audio(song, stems, model):
     # Consolidated HTML and JavaScript for audio controls and playback
     src_stems = {key: f"data:audio/mp3;base64,{value}" for key, value in stems.items()}

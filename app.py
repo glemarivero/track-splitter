@@ -71,23 +71,20 @@ MODELS = {
 }
 
 def main():
-  # Get all MP3 files in folder (without extension)
   model = st.selectbox("Choose a Demucs model", options=list(MODELS.keys()), format_func=lambda model: MODELS[model]["description"])
   stems = MODELS[model]["stems"]
   songs = [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
   # Streamlit dropdowns
-  track = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
+  song = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
   file_upload = st.file_uploader("Or choose your own song!")
 
   if file_upload is not None:
       song = file_upload.name
-      song = song[:-4]  # Remove .mp3 extension"]
+      song = song.split('.')[0]  # Remove extension
       if st.button("Split tracks"):
           ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
           path = save_uploaded_file(file_upload)
           separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path, model=model)
-  else:
-      song = track
   exists = True
   loaded_stems = dict()
   try:
@@ -97,9 +94,7 @@ def main():
       exists = False
   if exists:
     st.header(song)
-    st.markdown('<div class="audio-section">', unsafe_allow_html=True)  # Start audio section
     display_audio(song=song, stems=loaded_stems, model=model)
-    st.markdown('</div>', unsafe_allow_html=True)  # End audio section
     stem_to_download = st.selectbox("Download", options=[""] + stems, key="download")
     if stem_to_download:
         st.download_button(
