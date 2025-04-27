@@ -1,11 +1,11 @@
 import streamlit as st
 
-def display_audio(vocals_b64, bass_b64, drums_b64, other_b64):
+def display_audio(vocals, bass, drums, other):
     # Consolidated HTML and JavaScript for audio controls and playback
-    src_vocals = f"data:audio/mp3;base64,{vocals_b64}"
-    src_bass = f"data:audio/mp3;base64,{bass_b64}"
-    src_drums = f"data:audio/mp3;base64,{drums_b64}"
-    src_other = f"data:audio/mp3;base64,{other_b64}"
+    src_vocals = f"data:audio/mp3;base64,{vocals}"
+    src_bass = f"data:audio/mp3;base64,{bass}"
+    src_drums = f"data:audio/mp3;base64,{drums}"
+    src_other = f"data:audio/mp3;base64,{other}"
     html_code = f"""
     <style>
     .audio-controls {{

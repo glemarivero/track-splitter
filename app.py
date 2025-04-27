@@ -2,49 +2,16 @@ import os
 import streamlit as st
 import base64
 import os
-import urllib.request
-import tarfile
-from utils import separate_tracks
 from controls import display_audio
+from utils import install_ffmpeg_from_url, get_file_path, separate_tracks
 
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
-
-# Set Streamlit layout to wide mode
-# st.set_page_config(layout="wide")
+STEMS = ["vocals", "bass", "drums", "other"]
 
 st.title("Audio Track Splitter")
 
-def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
-    if os.path.exists("ffmpeg_bin/ffmpeg-7.0.2-amd64-static"):
-        return "ffmpeg_bin/ffmpeg-7.0.2-amd64-static/ffmpeg"
-    url = "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"
-    tar_path = "ffmpeg.tar.xz"
-
-    # Create install dir
-    os.makedirs(install_dir, exist_ok=True)
-
-    # Download the file
-    print("⬇️ Downloading ffmpeg static binary...")
-    urllib.request.urlretrieve(url, tar_path)
-
-    # Extract the archive
-    print("📦 Extracting...")
-    with tarfile.open(tar_path, "r:xz") as tar:
-        tar.extractall(path=install_dir)
-
-    # Find the ffmpeg binary inside the extracted folder
-    extracted_dir = next(os.path.join(install_dir, d) for d in os.listdir(install_dir) if d.startswith("ffmpeg"))
-    ffmpeg_path = os.path.join(extracted_dir, "ffmpeg")
-
-    # Make executable
-    os.chmod(ffmpeg_path, 0o755)
-
-    return ffmpeg_path
-
-ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-
-@st.cache_resource
+# @st.cache_resource
 def get_audio_base64(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
@@ -52,6 +19,7 @@ def get_audio_base64(file_path):
 
 def get_base64_from_file(file):
     data = file.read()
+    st.write(data)
     return base64.b64encode(data).decode()
 
 def save_uploaded_file(uploaded_file, save_dir="inputs"):
@@ -87,7 +55,6 @@ def footer():
         }
     }
     </style>
-
     <div class="footer">
         Made with ❤️ by Gabriel Lema<br>
         Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank">Demucs</a> for audio track separation.
@@ -107,29 +74,25 @@ def main():
       song = file_upload.name
       song = song.replace(" ", "_")[:-4]  # Remove .mp3 extension"]
       if st.button("Split tracks"):
+          ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
           path = save_uploaded_file(file_upload)
           separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
   else:
       song = track
-
-  # Convert both MP3 files to base64
   exists = True
-  vocals_b64 = bass_b64 = drums_b64 = other_b64 = None
+  stems = dict()
   try:
-      vocals_b64 = get_audio_base64(f"separated/htdemucs/{song}/vocals.mp3")
-      bass_b64 = get_audio_base64(f"separated/htdemucs/{song}/bass.mp3")
-      drums_b64 = get_audio_base64(f"separated/htdemucs/{song}/drums.mp3")
-      other_b64 = get_audio_base64(f"separated/htdemucs/{song}/other.mp3")
+      for stem in STEMS:
+          stems[stem] = get_audio_base64(get_file_path(song, stem))
   except Exception:
       exists = False
   if exists:
     st.header(song)
-    display_audio(vocals_b64=vocals_b64, bass_b64=bass_b64, drums_b64=drums_b64, other_b64=other_b64)
+    display_audio(**stems)
     cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
-    stems = ["vocals", "bass", "drums", "other"]
-    for i, stem in enumerate(stems):
-      with open(f"separated/htdemucs/{song}/{stem}.mp3", "rb") as f:
-        track_bytes = f.read()
+    for i, stem in enumerate(STEMS):
+      with open(get_file_path(song, stem), "rb") as fid:
+        track_bytes = fid.read()
 
       with cols[i % 2]:  # Alternate between the two columns
         st.download_button(
