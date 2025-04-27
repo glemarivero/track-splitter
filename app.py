@@ -2,12 +2,11 @@ import os
 import streamlit as st
 import base64
 import os
-from controls_refactored import display_audio
+from controls import display_audio
 from utils import install_ffmpeg_from_url, get_file_path, separate_tracks
 
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
-STEMS = ["vocals", "bass", "drums", "other"]
 
 st.title("Audio Track Splitter")
 
@@ -18,7 +17,7 @@ def get_audio_base64(file_path):
         return base64.b64encode(data).decode()
 
 
-def save_uploaded_file(uploaded_file, save_dir="inputs"):
+def save_uploaded_file(uploaded_file, save_dir=AUDIO_DIR):
     file_name = uploaded_file.name
     save_path = os.path.join(save_dir, file_name)
     if os.path.exists(save_path):
@@ -58,17 +57,20 @@ def footer():
     """, unsafe_allow_html=True)
 
 MODELS = {
-    "htdemucs": "HTDemucs - 4 tracks",
-    "htdemucs_6s": "HTDemucs - 6 tracks",
+    "htdemucs": {
+       "description": "HTDemucs - 4 tracks",
+       "stems": ["vocals", "bass", "drums", "other"],
+    },
+    "htdemucs_6s": {
+        "description": "HTDemucs - 6 tracks",
+        "stems": ["vocals", "bass", "drums", "other", "guitar", "piano"],
+    }
 }
 
 def main():
   # Get all MP3 files in folder (without extension)
-  model = st.selectbox("Choose a Demucs model", options=list(MODELS.keys()), format_func=lambda model: MODELS[model])
-  if model == "htdemucs":
-     stems = ["vocals", "bass", "drums", "other"]
-  else:
-      stems = ["vocals", "bass", "drums", "other", "guitar", "piano"]
+  model = st.selectbox("Choose a Demucs model", options=list(MODELS.keys()), format_func=lambda model: MODELS[model]["description"])
+  stems = MODELS[model]["stems"]
   songs = [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
   # Streamlit dropdowns
   track = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
@@ -94,7 +96,7 @@ def main():
     st.header(song)
     display_audio(stems=loaded_stems, model=model)
     cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
-    for i, stem in enumerate(STEMS):
+    for i, stem in enumerate(stems):
       with open(get_file_path(song, stem, model=model), "rb") as fid:
         track_bytes = fid.read()
       with cols[i % 2]:  # Alternate between the two columns
