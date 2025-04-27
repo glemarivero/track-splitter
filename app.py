@@ -125,6 +125,19 @@ def main():
   if exists:
     st.header(song)
     display_audio(vocals_b64=vocals_b64, bass_b64=bass_b64, drums_b64=drums_b64, other_b64=other_b64)
+    cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
+    stems = ["vocals", "bass", "drums", "other"]
+    for i, stem in enumerate(stems):
+      with open(f"separated/htdemucs/{song}/{stem}.mp3", "rb") as f:
+        track_bytes = f.read()
+
+      with cols[i % 2]:  # Alternate between the two columns
+        st.download_button(
+          label=f"Download {stem.capitalize()}",
+          data=track_bytes,
+          file_name=f"{song} - {stem}.mp3",
+          mime="audio/mp3"
+        )
   footer()
 
 
