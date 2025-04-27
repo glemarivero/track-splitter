@@ -11,7 +11,7 @@ STEMS = ["vocals", "bass", "drums", "other"]
 
 st.title("Audio Track Splitter")
 
-# @st.cache_resource
+@st.cache_resource
 def get_audio_base64(file_path):
     with open(file_path, "rb") as f:
         data = f.read()
