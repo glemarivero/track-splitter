@@ -17,13 +17,9 @@ def get_audio_base64(file_path):
         data = f.read()
         return base64.b64encode(data).decode()
 
-def get_base64_from_file(file):
-    data = file.read()
-    st.write(data)
-    return base64.b64encode(data).decode()
 
 def save_uploaded_file(uploaded_file, save_dir="inputs"):
-    file_name = uploaded_file.name.replace(" ", "_")
+    file_name = uploaded_file.name
     save_path = os.path.join(save_dir, file_name)
     if os.path.exists(save_path):
         return save_path
@@ -62,38 +58,42 @@ def footer():
     """, unsafe_allow_html=True)
 
 
+
 def main():
   # Get all MP3 files in folder (without extension)
-  mp3_files = [f[:-4] for f in os.listdir(AUDIO_DIR) if f.endswith(".mp3")]
-
+  model = st.selectbox("Choose a Demucs model", ["htdemucs", "htdemucs_6s"], key="model")
+  if model == "htdemucs":
+     stems = ["vocals", "bass", "drums", "other"]
+  else:
+      stems = ["vocals", "bass", "drums", "other", "guitar", "piano"]
+  songs = [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
   # Streamlit dropdowns
-  track = st.selectbox("Choose a preloaded audio track", mp3_files, key="audio1")
+  track = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
   file_upload = st.file_uploader("Or choose your own song!")
 
   if file_upload is not None:
       song = file_upload.name
-      song = song.replace(" ", "_")[:-4]  # Remove .mp3 extension"]
+      song = song[:-4]  # Remove .mp3 extension"]
       if st.button("Split tracks"):
           ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
           path = save_uploaded_file(file_upload)
-          separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path)
+          separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path, model=model)
   else:
       song = track
   exists = True
-  stems = dict()
+  loaded_stems = dict()
   try:
-      for stem in STEMS:
-          stems[stem] = get_audio_base64(get_file_path(song, stem))
+      for stem in stems:
+          loaded_stems[stem] = get_audio_base64(get_file_path(song, stem, model=model))
   except Exception:
       exists = False
   if exists:
     st.header(song)
-    display_audio(**stems)
+    display_audio(model=model, **loaded_stems)
     cols = st.columns(2)  # Create a 2x2 grid using Streamlit columns
     for i, stem in enumerate(STEMS):
-      with open(get_file_path(song, stem), "rb") as fid:
+      with open(get_file_path(song, stem, model=model), "rb") as fid:
         track_bytes = fid.read()
-
       with cols[i % 2]:  # Alternate between the two columns
         st.download_button(
           label=f"Download {stem.capitalize()}",

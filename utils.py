@@ -4,9 +4,22 @@ import streamlit as st
 import tqdm as tqdm_module  # Not from tqdm import tqdm!
 import urllib.request
 import tarfile
+import shlex
+
 
 in_path = f'./inputs'
 out_path = f'./separated/'
+
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        import time
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        st.write(f"Execution time: {end_time - start_time:.2f} seconds")
+        return result
+    return wrapper
 
 
 def call_function_with_streamlit_progress(func, *args, **kwargs):
@@ -23,7 +36,12 @@ def call_function_with_streamlit_progress(func, *args, **kwargs):
             if self.total:
                 progress = int((self.n / self.total) * 100)
                 progress_bar.progress(min(progress, 100))
-                progress_text.text(f"Progress: {progress}%")
+                elapsed_time = self.format_dict['elapsed']
+                rate = self.format_dict['rate']
+                remaining_time = (self.total - self.n) / rate if rate and self.total > self.n else 0
+                progress_text.text(
+                    f"Progress: {progress}% | Elapsed: {elapsed_time:.2f}s | Remaining: {remaining_time:.2f}s"
+                )
                 if self.total == self.n:
                     progress_bar.empty()
                     progress_text.empty()
@@ -39,12 +57,13 @@ def call_function_with_streamlit_progress(func, *args, **kwargs):
         # Always restore tqdm
         tqdm_module.tqdm = real_tqdm
 
-def separate_tracks(inp=None, outp=None, ffmpeg_path=None):
+@timeit
+def separate_tracks(inp=None, outp=None, ffmpeg_path=None, model="htdemucs"):
     inp = inp or in_path
-    inp = inp.replace(" ", "")
     outp = outp or out_path
-    opts_str = f"-o {outp} -n htdemucs --device cpu --mp3 --mp3-bitrate=320 {inp}"
-    opts = opts_str.split()
+    opts_str = f'-o {outp} -n {model} --device cpu --mp3 --mp3-bitrate=320 "{inp}"'
+
+    opts = shlex.split(opts_str)
     os.environ["PATH"] = f"{ffmpeg_path}:{os.environ['PATH']}" if ffmpeg_path else os.environ["PATH"]
     call_function_with_streamlit_progress(demucs_main, opts)
 
@@ -76,5 +95,5 @@ def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
 
     return ffmpeg_path
 
-def get_file_path(song, stem):
-    return f"{out_path}/htdemucs/{song}/{stem}.mp3"
+def get_file_path(song, stem, model):
+    return f"{out_path}/{model}/{song}/{stem}.mp3"
