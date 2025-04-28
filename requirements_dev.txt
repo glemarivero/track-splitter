@@ -1,0 +1,1 @@
+ruff==0.5.4  # and rememeber to install ruff extension in VSCode

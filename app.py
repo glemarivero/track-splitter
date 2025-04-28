@@ -1,14 +1,16 @@
-import os
-import streamlit as st
 import base64
 import os
+
+import streamlit as st
+
 from controls import display_audio
-from utils import install_ffmpeg_from_url, get_file_path, separate_tracks
+from utils import get_file_path, install_ffmpeg_from_url, separate_tracks
 
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
 
 st.title("Audio Track Splitter")
+
 
 @st.cache_resource
 def get_audio_base64(file_path):
@@ -29,7 +31,8 @@ def save_uploaded_file(uploaded_file, save_dir=AUDIO_DIR):
 
 
 def footer():
-    st.markdown("""
+    st.markdown(
+        """
     <style>
     .footer {
         position: fixed;
@@ -57,58 +60,70 @@ def footer():
         Made with ❤️ by Gabriel Lema<br>
         Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank">Demucs</a> for audio track separation.
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
+
 
 MODELS = {
     "htdemucs": {
-       "description": "HTDemucs - 4 tracks",
-       "stems": ["vocals", "bass", "drums", "other"],
+        "description": "HTDemucs - 4 tracks",
+        "stems": ["vocals", "bass", "drums", "other"],
     },
     "htdemucs_6s": {
         "description": "HTDemucs - 6 tracks",
         "stems": ["vocals", "bass", "drums", "guitar", "piano", "other"],
-    }
+    },
 }
 
+
 def main():
-  model = st.selectbox(
-      label="Choose a Demucs model",
-      options=list(MODELS.keys()),
-      format_func=lambda model: MODELS[model]["description"] +f' ({", ".join(MODELS[model]["stems"])})',
-  )
-  stems = MODELS[model]["stems"]
-  songs = [""] + [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
-  # Streamlit dropdowns
-  song = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
-  file_upload = st.file_uploader("Or choose your own song!")
+    model = st.selectbox(
+        label="Choose a Demucs model",
+        options=list(MODELS.keys()),
+        format_func=lambda model: MODELS[model]["description"]
+        + f' ({", ".join(MODELS[model]["stems"])})',
+    )
+    stems = MODELS[model]["stems"]
+    songs = [""] + [
+        path
+        for path in os.listdir(f"{OUTPUT_PATH}/{model}")
+        if not path.startswith(".")
+    ]
+    song = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
+    file_upload = st.file_uploader("Or choose your own song!")
 
-  if file_upload is not None:
-      song = file_upload.name
-      song = song.split('.')[0]  # Remove extension
-      if st.button("Split tracks"):
-          ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-          path = save_uploaded_file(file_upload)
-          separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path, model=model)
-  exists = True
-  loaded_stems = dict()
-  try:
-      for stem in stems:
-          loaded_stems[stem] = get_audio_base64(get_file_path(song, stem, model=model))
-  except Exception:
-      exists = False
-  if exists:
-    st.header(song)
-    display_audio(song=song, stems=loaded_stems, model=model)
-    stem_to_download = st.selectbox("Download", options=[""] + stems, key="download")
-    if stem_to_download:
-        st.download_button(
-            label="Download",
-            data=loaded_stems[stem_to_download],
-            file_name=f"{song} - {stem_to_download}.mp3",
-            mime="audio/mp3",
+    if file_upload is not None:
+        song = file_upload.name
+        song = song.split(".")[0]  # Remove extension from song name
+        if st.button("Split tracks"):
+            ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+            path = save_uploaded_file(file_upload)
+            separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path, model=model)
+    exists = True
+    loaded_stems = dict()
+    try:
+        for stem in stems:
+            loaded_stems[stem] = get_audio_base64(
+                get_file_path(song, stem, model=model)
+            )
+    except Exception:
+        exists = False
+    if exists:
+        st.header(song)
+        display_audio(song=song, stems=loaded_stems, model=model)
+        stem_to_download = st.selectbox(
+            "Download", options=[""] + stems, key="download"
         )
+        if stem_to_download:
+            st.download_button(
+                label="Download",
+                data=loaded_stems[stem_to_download],
+                file_name=f"{song} - {stem_to_download}.mp3",
+                mime="audio/mp3",
+            )
 
-  footer()
+    footer()
 
 
 if __name__ == "__main__":

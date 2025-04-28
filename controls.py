@@ -9,6 +9,7 @@ STEMS_EMOJIS = {
     "guitar": "🎸",
 }
 
+
 def display_audio(song, stems, model):
     # Consolidated HTML and JavaScript for audio controls and playback
     src_stems = {key: f"data:audio/mp3;base64,{value}" for key, value in stems.items()}
@@ -115,4 +116,6 @@ def display_audio(song, stems, model):
     }});
     </script>
     """
-    st.components.v1.html(html_code, height=400 if len(stems) > 4 else 300, scrolling=True)
+    st.components.v1.html(
+        html_code, height=400 if len(stems) > 4 else 310, scrolling=True
+    )
