@@ -66,7 +66,7 @@ MODELS = {
     },
     "htdemucs_6s": {
         "description": "HTDemucs - 6 tracks",
-        "stems": ["vocals", "bass", "drums", "other", "guitar", "piano"],
+        "stems": ["vocals", "bass", "drums", "guitar", "piano", "other"],
     }
 }
 
