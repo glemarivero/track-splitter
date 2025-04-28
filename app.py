@@ -71,9 +71,13 @@ MODELS = {
 }
 
 def main():
-  model = st.selectbox("Choose a Demucs model", options=list(MODELS.keys()), format_func=lambda model: MODELS[model]["description"])
+  model = st.selectbox(
+      label="Choose a Demucs model",
+      options=list(MODELS.keys()),
+      format_func=lambda model: MODELS[model]["description"] +f' ({", ".join(MODELS[model]["stems"])})',
+  )
   stems = MODELS[model]["stems"]
-  songs = [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
+  songs = [""] + [path for path in os.listdir(f"{OUTPUT_PATH}/{model}") if not path.startswith(".")]
   # Streamlit dropdowns
   song = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
   file_upload = st.file_uploader("Or choose your own song!")
