@@ -15,6 +15,9 @@ AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
 
 st.title("Audio Track Splitter")
+ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+print(ffmpeg_path)
+st.session_state["ffmpeg_path"] = ffmpeg_path
 
 
 @st.cache_resource
@@ -158,6 +161,4 @@ def main():
 
 
 if __name__ == "__main__":
-    ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-    st.session_state["ffmpeg_path"] = ffmpeg_path
     main()
