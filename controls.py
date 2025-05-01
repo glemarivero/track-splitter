@@ -67,7 +67,8 @@ def display_audio(song, stems, model):
 
     <div style="margin-top: 5%;"> <!-- Adjusted to percentage -->
         <label>Progress</label>
-        <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%;">
+        <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 80%;">
+        <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
     </div>
 
     <div class="audio-controls">
@@ -99,7 +100,17 @@ def display_audio(song, stems, model):
     setInterval(() => {{
         if (Object.values(audioElements).every(audio => !audio.paused)) {{
             const pos = Math.min(...Object.values(audioElements).map(audio => audio.currentTime));
+            const total = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
             seekbar.value = pos;
+
+            // Update current time and total time display
+            const formatTime = (time) => {{
+                const minutes = Math.floor(time / 60);
+                const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+                return `${{minutes}}:${{seconds}}`;
+            }};
+            document.getElementById("current-time").textContent = formatTime(pos);
+            document.getElementById("total-time").textContent = formatTime(total);
         }}
     }}, 100);
 
