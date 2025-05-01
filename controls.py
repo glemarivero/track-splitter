@@ -67,7 +67,14 @@ def display_audio(song, stems, model):
 
     <div style="margin-top: 5%;"> <!-- Adjusted to percentage -->
         <label>Progress</label>
-        <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 80%;">
+        <div style="position: relative; width: 80%; margin: 0 auto;">
+            <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%; z-index: 1; position: relative;">
+            <div id="markers" style="position: relative; top: -10px; width: 100%; height: 20px; z-index: 2;">
+                <div id="selected-area" style="position: absolute; top: 50%; height: 5px; background-color: green; z-index: -1; border-radius: 5px;"></div>
+                <div id="start-marker" draggable="true" style="position: absolute; left: 0; width: 3px; height: 20px; background-color: green; cursor: ew-resize; transform: translateY(-50%);"></div>
+                <div id="end-marker" draggable="true" style="position: absolute; right: 0; width: 3px; height: 20px; background-color: green; cursor: ew-resize; transform: translateY(-50%);"></div>
+            </div>
+        </div>
         <span id="current-time">0:00</span> / <span id="total-time">0:00</span>
     </div>
 
@@ -87,11 +94,98 @@ def display_audio(song, stems, model):
         return acc;
     }}, {{}});
 
-    function playAll() {{
-        const t = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
-        seekbar.max = t;
-        Object.values(audioElements).forEach(audio => audio.play());
+    const startMarker = document.getElementById("start-marker");
+    const endMarker = document.getElementById("end-marker");
+    const selectedArea = document.getElementById("selected-area");
+    const markersContainer = document.getElementById("markers");
+
+    let seekbarWidth = seekbar.offsetWidth;
+    let maxDuration = 0;
+
+    function updateMarkerPosition(marker, position) {{
+        const percentage = Math.min(Math.max(position / seekbarWidth, 0), 1);
+        marker.style.left = `${{percentage * 100}}%`;
+        updateSelectedArea();
+        return percentage * maxDuration;
     }}
+
+    function updateSelectedArea() {{
+        const startPercentage = parseFloat(startMarker.style.left) || 0;
+        const endPercentage = parseFloat(endMarker.style.left) || 100;
+        selectedArea.style.left = `${{startPercentage}}%`;
+        selectedArea.style.width = `${{endPercentage - startPercentage}}%`;
+    }}
+
+    function syncSeekbarToMarker(marker) {{
+        const percentage = parseFloat(marker.style.left) / 100;
+        seekbar.value = percentage * maxDuration;
+        Object.values(audioElements).forEach(audio => {{
+            audio.currentTime = seekbar.value;
+        }});
+    }}
+
+    startMarker.addEventListener("drag", (event) => {{
+        if (event.clientX > 0) {{
+            const position = event.clientX - markersContainer.getBoundingClientRect().left;
+            const time = updateMarkerPosition(startMarker, position);
+
+            // Update currentTime immediately to the marker's position
+            Object.values(audioElements).forEach(audio => {{
+                audio.currentTime = time; // Update current time
+                if (!audio.paused) {{
+                    audio.play(); // Resume playback if already playing
+                }}
+            }});
+
+            seekbar.value = time; // Sync the seekbar to the marker's position
+        }}
+    }});
+
+    startMarker.addEventListener("dragend", (event) => {{
+        if (event.clientX > 0) {{
+            const position = event.clientX - markersContainer.getBoundingClientRect().left;
+            const time = updateMarkerPosition(startMarker, position);
+
+            // Ensure playback starts at the | marker's position
+            Object.values(audioElements).forEach(audio => {{
+                audio.currentTime = time; // Set the audio's current time to the marker's position
+                audio.play(); // Start playback
+            }});
+
+            seekbar.value = time; // Sync the seekbar to the marker's position
+        }}
+    }});
+
+    endMarker.addEventListener("drag", (event) => {{
+        if (event.clientX > 0) {{
+            const position = event.clientX - markersContainer.getBoundingClientRect().left;
+            updateMarkerPosition(endMarker, position);
+        }}
+    }});
+
+    function playAll() {{
+        maxDuration = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
+        seekbar.max = maxDuration;
+        seekbarWidth = seekbar.offsetWidth;
+        updateSelectedArea(); // Ensure the green bar is initialized
+
+        // Start playback from the | marker's position
+        const startPercentage = parseFloat(startMarker.style.left) / 100;
+        const startTime = startPercentage * maxDuration;
+
+        Object.values(audioElements).forEach(audio => {{
+            audio.currentTime = startTime; // Set playback to start marker position
+            audio.play();
+        }});
+        seekbar.value = startTime; // Sync the seekbar to the start marker
+    }}
+
+    document.addEventListener("DOMContentLoaded", () => {{
+        updateSelectedArea(); // Initialize the green bar on page load
+
+        // Trigger the Play event programmatically
+        playAll();
+    }});
 
     function pauseAll() {{
         Object.values(audioElements).forEach(audio => audio.pause());
@@ -111,6 +205,20 @@ def display_audio(song, stems, model):
             }};
             document.getElementById("current-time").textContent = formatTime(pos);
             document.getElementById("total-time").textContent = formatTime(total);
+
+            // Restart to | marker position if | marker is reached
+            const startPercentage = parseFloat(startMarker.style.left) / 100;
+            const endPercentage = parseFloat(endMarker.style.left) / 100;
+            const startTime = startPercentage * maxDuration;
+            const endTime = endPercentage * maxDuration;
+
+            if (pos >= endTime) {{
+                Object.values(audioElements).forEach(audio => {{
+                    audio.currentTime = startTime;
+                    audio.play(); // Ensure playback resumes from the start marker
+                }});
+                seekbar.value = startTime;
+            }}
         }}
     }}, 100);
 
