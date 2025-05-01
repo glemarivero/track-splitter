@@ -99,6 +99,8 @@ def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
 
     # Make executable
     os.chmod(ffmpeg_path, 0o755)
+    # Move ffmpeg to the PATH
+    os.environ["PATH"] = f"{os.path.dirname(ffmpeg_path)}:{os.environ['PATH']}"
 
     return ffmpeg_path
 
