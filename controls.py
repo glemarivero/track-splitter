@@ -48,6 +48,9 @@ def display_audio(song, stems, model):
     margin: 0 auto;
     text-align: center;
 }}
+input[type="range"] {{
+    width: 100%; /* Ensure sliders take full width */
+}}
 @media (max-width: 768px) {{
     .audio-controls {{
         flex-direction: column;
@@ -55,6 +58,12 @@ def display_audio(song, stems, model):
     }}
     .audio-column {{
         min-width: 100%;
+    }}
+    .audio-control {{
+        width: 90%; /* Adjust control width for smaller screens */
+    }}
+    input[type="range"] {{
+        width: 100%; /* Ensure sliders remain responsive */
     }}
 }}
 </style>
@@ -214,10 +223,65 @@ startMarker.addEventListener("dragend", (event) => {{
     }}
 }});
 
-// Dragging end marker — no seek needed
+// Add touch support for start marker
+startMarker.addEventListener("touchmove", (event) => {{
+    const touch = event.touches[0];
+    if (touch) {{
+        initializeAudio();
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
+        loopStartTime = updateMarkerPosition(startMarker, position);
+        setAudioPosition(loopStartTime);
+    }}
+}});
+
+startMarker.addEventListener("touchstart", (event) => {{
+    const touch = event.touches[0];
+    if (touch) {{
+        initializeAudio();
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
+        loopStartTime = updateMarkerPosition(startMarker, position);
+        setAudioPosition(loopStartTime);
+    }}
+}});
+
+startMarker.addEventListener("touchend", (event) => {{
+    const touch = event.changedTouches[0];
+    if (touch) {{
+        initializeAudio();
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
+        loopStartTime = updateMarkerPosition(startMarker, position);
+        setAudioPosition(loopStartTime);
+    }}
+}});
+
+// Add touch support for end marker
 endMarker.addEventListener("drag", (event) => {{
     if (event.clientX > 0) {{
         const position = event.clientX - markersContainer.getBoundingClientRect().left;
+        updateMarkerPosition(endMarker, position);
+    }}
+}});
+
+endMarker.addEventListener("touchmove", (event) => {{
+    const touch = event.touches[0];
+    if (touch) {{
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
+        updateMarkerPosition(endMarker, position);
+    }}
+}});
+
+endMarker.addEventListener("touchstart", (event) => {{
+    const touch = event.touches[0];
+    if (touch) {{
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
+        updateMarkerPosition(endMarker, position);
+    }}
+}});
+
+endMarker.addEventListener("touchend", (event) => {{
+    const touch = event.changedTouches[0];
+    if (touch) {{
+        const position = touch.clientX - markersContainer.getBoundingClientRect().left;
         updateMarkerPosition(endMarker, position);
     }}
 }});
