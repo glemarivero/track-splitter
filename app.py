@@ -130,11 +130,10 @@ def main():
     except Exception:
         exists = False
         if song and st.button("Split tracks"):
-            ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
             separate_tracks(
                 os.path.join(AUDIO_DIR, st.session_state["song"]),
                 OUTPUT_PATH,
-                ffmpeg_path=ffmpeg_path,
+                ffmpeg_path=st.session_state["ffmpeg_path"],
                 model=model,
             )
             exists = True
@@ -159,4 +158,6 @@ def main():
 
 
 if __name__ == "__main__":
+    ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+    st.session_state["ffmpeg_path"] = ffmpeg_path
     main()
