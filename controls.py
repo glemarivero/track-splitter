@@ -60,12 +60,20 @@ def display_audio(song, stems, model):
 </style>
 
 <div>
+    <p style="text-align: left; font-size: 16px; margin-bottom: 20px;">
+        Instructions:
+        <ul>
+            <li>Adjust the volume of individual stems using the sliders.</li>
+            <li>Drag the green markers to loop specific sections of the audio.</li>
+        </ul>
+    </p>
+</div>
+<div>
     <button onclick="playAll()">▶️ Play</button>
     <button onclick="pauseAll()">⏸ Pause</button>
 </div>
 
 <div style="margin-top: 5%;">
-    <label>Progress</label>
     <div style="position: relative; width: 80%; margin: 0 auto;">
         <input type="range" id="seekbar" value="0" min="0" step="0.01" style="width: 100%; z-index: 1; position: relative;">
         <div id="markers" style="position: relative; top: -10px; width: 100%; height: 20px; z-index: 2;">
