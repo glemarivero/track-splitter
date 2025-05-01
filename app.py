@@ -96,7 +96,7 @@ def main():
     file_upload = st.file_uploader("Choose your own song!")
     yt_song = st.text_input("Enter YouTube link:")
     st.text(
-        body="ℹ️ Double tap outside the input box after pasting the link if using mobile."
+        body="ℹ️ Double tap outside the input box after pasting the link if using your phone."
     )
     if "song" not in st.session_state:
         st.session_state["song"] = ""
@@ -133,12 +133,18 @@ def main():
     except Exception:
         exists = False
         if song and st.button("Split tracks"):
-            separate_tracks(
-                os.path.join(AUDIO_DIR, st.session_state["song"]),
-                OUTPUT_PATH,
-                ffmpeg_path=st.session_state["ffmpeg_path"],
-                model=model,
-            )
+            if not os.path.exists("/tmp/lock"):
+                with open("/tmp/lock", "w") as f:
+                    f.write("locked")
+                separate_tracks(
+                    os.path.join(AUDIO_DIR, st.session_state["song"]),
+                    OUTPUT_PATH,
+                    ffmpeg_path=st.session_state["ffmpeg_path"],
+                    model=model,
+                )
+                os.remove("/tmp/lock")
+            else:
+                st.warning("Please wait a moment before trying again.")
             exists = True
             st.rerun()
         else:
