@@ -112,6 +112,12 @@ def get_file_path(song: str, stem: str, model: str) -> str:
 def download_from_yt(url: str, input_dir: str) -> str:
     import yt_dlp
 
+    # if https://youtu.be/GLvohMXgcBo?si=1RLd6Dc6Yxz-4Yb5
+    # then url = https://www.youtube.com/watch?v=GLvohMXgcBo&si=1RLd6Dc6Yxz-4Yb5
+    if "youtu.be" in url:
+        video = url.split("/")[-1].split("?")[0]
+        url = f"https://www.youtube.com/watch?v={video}"
+
     ydl_opts = {
         "format": "bestaudio/best",
         "postprocessors": [

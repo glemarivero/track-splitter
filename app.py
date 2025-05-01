@@ -91,7 +91,10 @@ def main():
     )
     stems = MODELS[model]["stems"]
     file_upload = st.file_uploader("Choose your own song!")
-    yt_song = st.text_input("Enter youtube link")
+    yt_song = st.text_input("Enter YouTube link:")
+    st.text(
+        body="ℹ️ Double tap outside the input box after pasting the link if using mobile."
+    )
     if "song" not in st.session_state:
         st.session_state["song"] = ""
     song = st.session_state.get("song", "")
@@ -126,7 +129,7 @@ def main():
             )
     except Exception:
         exists = False
-        if st.button("Split tracks"):
+        if song and st.button("Split tracks"):
             ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
             separate_tracks(
                 os.path.join(AUDIO_DIR, st.session_state["song"]),
@@ -136,6 +139,8 @@ def main():
             )
             exists = True
             st.rerun()
+        else:
+            return
     if exists:
         st.header(song)
         display_audio(song=song, stems=loaded_stems, model=model)
