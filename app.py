@@ -4,7 +4,12 @@ import os
 import streamlit as st
 
 from controls import display_audio
-from utils import get_file_path, install_ffmpeg_from_url, separate_tracks
+from utils import (
+    download_from_yt,
+    get_file_path,
+    install_ffmpeg_from_url,
+    separate_tracks,
+)
 
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
@@ -85,21 +90,33 @@ def main():
         + f' ({", ".join(MODELS[model]["stems"])})',
     )
     stems = MODELS[model]["stems"]
-    songs = [""] + [
-        path
-        for path in os.listdir(f"{OUTPUT_PATH}/{model}")
-        if not path.startswith(".")
-    ]
-    song = st.selectbox("Choose a preloaded audio track", songs, key="audio1")
-    file_upload = st.file_uploader("Or choose your own song!")
+    file_upload = st.file_uploader("Choose your own song!")
+    yt_song = st.text_input("Enter youtube link")
+    if "song" not in st.session_state:
+        st.session_state["song"] = ""
+    song = st.session_state.get("song", "")
+
+    if yt_song:
+        downloaded_song = download_from_yt(yt_song, input_dir=AUDIO_DIR)
+        if downloaded_song:
+            st.session_state["song"] = downloaded_song  # Set downloaded song as default
+            st.success("Download complete!")
+        else:
+            st.error("Failed to download the song.")
 
     if file_upload is not None:
-        song = file_upload.name
-        song = song.split(".")[0]  # Remove extension from song name
-        if st.button("Split tracks"):
-            ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-            path = save_uploaded_file(file_upload)
-            separate_tracks(path, OUTPUT_PATH, ffmpeg_path=ffmpeg_path, model=model)
+        st.session_state["song"] = file_upload.name  # Set uploaded file as default
+        save_uploaded_file(file_upload, save_dir=AUDIO_DIR)
+
+    songs = [""] + [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
+    song = st.selectbox(
+        "Or choose a preloaded audio track",
+        songs,
+        key="audio1",
+        index=0
+        if st.session_state["song"] == ""
+        else songs.index(st.session_state["song"]),
+    )
     exists = True
     loaded_stems = dict()
     try:
@@ -109,6 +126,16 @@ def main():
             )
     except Exception:
         exists = False
+        if st.button("Split tracks"):
+            ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+            separate_tracks(
+                os.path.join(AUDIO_DIR, st.session_state["song"]),
+                OUTPUT_PATH,
+                ffmpeg_path=ffmpeg_path,
+                model=model,
+            )
+            exists = True
+            st.rerun()
     if exists:
         st.header(song)
         display_audio(song=song, stems=loaded_stems, model=model)

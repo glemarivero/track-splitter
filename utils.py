@@ -104,4 +104,29 @@ def install_ffmpeg_from_url(install_dir="ffmpeg_bin"):
 
 
 def get_file_path(song: str, stem: str, model: str) -> str:
+    if song.endswith(".mp3"):
+        song = song[:-4]
     return f"{out_path}/{model}/{song}/{stem}.mp3"
+
+
+def download_from_yt(url: str, input_dir: str) -> str:
+    import yt_dlp
+
+    ydl_opts = {
+        "format": "bestaudio/best",
+        "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": "mp3",
+                "preferredquality": "192",
+            }
+        ],
+        "outtmpl": f"{input_dir}/%(title)s.%(ext)s",
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=True)
+        original_file = ydl.prepare_filename(info)
+        # Replace extension with .mp3
+        mp3_file = os.path.basename(os.path.splitext(original_file)[0] + ".mp3")
+        return mp3_file
