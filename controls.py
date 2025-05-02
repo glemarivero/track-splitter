@@ -130,6 +130,15 @@ function initializeAudio() {{
     }}
 }}
 
+// Add event listeners to update duration when metadata is loaded
+Object.values(audioElements).forEach(audio => {{
+    audio.addEventListener("loadedmetadata", () => {{
+        maxDuration = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
+        seekbar.max = maxDuration;
+        updateTimeDisplay(0); // Update the displayed total duration
+    }});
+}});
+
 function updateTimeDisplay(pos) {{
     const total = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
     const formatTime = (time) => {{

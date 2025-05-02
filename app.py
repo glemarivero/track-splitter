@@ -17,11 +17,6 @@ from utils import (
 AUDIO_DIR = "inputs"
 OUTPUT_PATH = "separated"
 
-st.title("Audio Track Splitter")
-ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-print(ffmpeg_path)
-st.session_state["ffmpeg_path"] = ffmpeg_path
-
 
 @st.cache_resource
 def get_audio_base64(file_path):
@@ -89,6 +84,10 @@ MODELS = {
 
 
 def main():
+    st.title("Audio Track Splitter")
+    ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
+    print(ffmpeg_path)
+    st.session_state["ffmpeg_path"] = ffmpeg_path
     model = st.selectbox(
         label="Choose a Demucs model",
         options=list(MODELS.keys()),
@@ -96,78 +95,98 @@ def main():
         + f' ({", ".join(MODELS[model]["stems"])})',
     )
     stems = MODELS[model]["stems"]
-    file_upload = st.file_uploader("Choose your own song!")
-    yt_song = st.text_input("Enter YouTube link:")
-    st.text(
-        body="ℹ️ Double tap outside the input box after pasting the link if using your phone."
-    )
     if "song" not in st.session_state:
         st.session_state["song"] = ""
     song = st.session_state.get("song", "")
 
-    if yt_song:
-        downloaded_song = download_from_yt(yt_song, input_dir=AUDIO_DIR)
-        if downloaded_song:
-            st.session_state["song"] = downloaded_song  # Set downloaded song as default
-            st.success("Download complete!")
-        else:
-            st.error("Failed to download the song.")
+    songs = [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
+    if not st.session_state["song"]:
+        file_upload = st.file_uploader("Choose your own song!")
+        yt_song = st.text_input("Enter YouTube link:")
+        st.text(
+            body="ℹ️ Double tap outside the input box after pasting the link if using your phone."
+        )
+        if yt_song:
+            downloaded_song = download_from_yt(yt_song, input_dir=AUDIO_DIR)
+            if downloaded_song:
+                st.session_state["song"] = (
+                    downloaded_song  # Set downloaded song as default
+                )
+                st.success("Download complete!")
+            else:
+                st.error("Failed to download the song.")
 
-    if file_upload is not None:
-        st.session_state["song"] = file_upload.name  # Set uploaded file as default
-        save_uploaded_file(file_upload, save_dir=AUDIO_DIR)
+        if file_upload is not None:
+            st.session_state["song"] = file_upload.name  # Set uploaded file as default
+            save_uploaded_file(file_upload, save_dir=AUDIO_DIR)
 
-    songs = [""] + [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
-    song = st.selectbox(
-        "Or choose a preloaded audio track",
-        songs,
-        key="audio1",
-        index=0
-        if st.session_state["song"] == ""
-        else songs.index(st.session_state["song"]),
-    )
-    exists = True
-    loaded_stems = dict()
-    try:
-        for stem in stems:
-            loaded_stems[stem] = get_audio_base64(
-                get_file_path(song, stem, model=model)
-            )
-    except Exception:
-        exists = False
-        if not lock_exists() and song:
+        songs = [""] + songs
+        st.session_state["song"] = st.selectbox(
+            "Or choose a preloaded audio track",
+            songs,
+            key="audio1",
+            index=0
+            if st.session_state["song"] == ""
+            else songs.index(st.session_state["song"]),
+        )
+        if st.session_state["song"]:
+            st.rerun()
+    else:
+        if st.button("Go back"):
+            st.session_state["song"] = ""
+            st.rerun()
+        st.session_state["song"] = st.selectbox(
+            "Choose a preloaded audio track",
+            songs,
+            key="audio1",
+            index=0
+            if st.session_state["song"] == ""
+            else songs.index(st.session_state["song"]),
+        )
+        st.header(st.session_state["song"])
+        loaded_stems = dict()
+        try:
+            for stem in stems:
+                loaded_stems[stem] = get_audio_base64(
+                    get_file_path(song=st.session_state["song"], stem=stem, model=model)
+                )
+            exists = True
+        except Exception:
+            exists = False
             file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
             audio_placeholder = st.empty()
             audio_placeholder.audio(file_path)
-            if song and st.button("Split tracks"):
-                lock_file()
-                separate_tracks(
-                    file_path=file_path,
-                    output_path=OUTPUT_PATH,
-                    ffmpeg_path=st.session_state["ffmpeg_path"],
-                    model=model,
-                )
-                lock_remove()
-                exists = True
-                audio_placeholder.empty()
-            else:
-                exists = False
-        else:
-            st.warning("Please wait a moment before trying again.")
-            exists = False
-    if exists:
-        st.header(song)
-        display_audio(song=song, stems=loaded_stems, model=model)
-        stem_to_download = st.selectbox(
-            "Download", options=[""] + stems, key="download"
-        )
-        if stem_to_download:
-            st.download_button(
-                label="Download",
-                data=loaded_stems[stem_to_download],
-                file_name=f"{song} - {stem_to_download}.mp3",
-                mime="audio/mp3",
+            split_button_placeholder = st.empty()
+            if split_button_placeholder.button(
+                "Split tracks", key="split_button_placeholder"
+            ):
+                if not lock_exists():
+                    lock_file()
+                    separate_tracks(
+                        file_path=file_path,
+                        output_path=OUTPUT_PATH,
+                        ffmpeg_path=st.session_state["ffmpeg_path"],
+                        model=model,
+                    )
+                    lock_remove()
+                    exists = True
+                    audio_placeholder.empty()
+                    split_button_placeholder.empty()
+                    st.rerun()
+                else:
+                    st.warning("Please wait a moment before trying again.")
+        if exists:
+            display_audio(song=song, stems=loaded_stems, model=model)
+            stem_to_download = st.selectbox(
+                "Download", options=[""] + stems, key="download"
             )
+            if stem_to_download:
+                st.download_button(
+                    label="Download",
+                    data=loaded_stems[stem_to_download],
+                    file_name=f"{song} - {stem_to_download}.mp3",
+                    mime="audio/mp3",
+                )
 
     footer()
 
