@@ -163,10 +163,11 @@ def lock_exists(max_time_lock_in_seconds=MAX_TIME_LOCK_IN_SECONDS):
     now = datetime.datetime.now()
     if os.path.exists("/tmp/lock"):
         with open("/tmp/lock", "r") as f:
-            if f.read() == "":
+            try:
+                created_time = datetime.datetime.fromisoformat(f.read().strip())
+            except ValueError:
                 lock_remove()
                 return False
-            created_time = datetime.datetime.fromisoformat(f.read().strip())
         if (now - created_time).total_seconds() > max_time_lock_in_seconds:
             lock_remove()
             return False
