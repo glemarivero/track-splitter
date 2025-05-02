@@ -8,7 +8,9 @@ from utils import (
     download_from_yt,
     get_file_path,
     install_ffmpeg_from_url,
+    lock_exists,
     lock_file,
+    lock_remove,
     separate_tracks,
 )
 
@@ -133,7 +135,7 @@ def main():
             )
     except Exception:
         exists = False
-        if not os.path.exists("/tmp/lock"):
+        if lock_exists():
             if song and st.button("Split tracks"):
                 file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
                 lock_file()
@@ -144,7 +146,7 @@ def main():
                     ffmpeg_path=st.session_state["ffmpeg_path"],
                     model=model,
                 )
-                os.remove("/tmp/lock")
+                lock_remove()
                 exists = True
             else:
                 exists = False
