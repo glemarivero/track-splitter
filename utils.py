@@ -66,7 +66,7 @@ def call_function_with_streamlit_progress(func, *args, **kwargs):
 def separate_tracks(
     file_path: str, output_path: str, ffmpeg_path=None, model="htdemucs"
 ):
-    opts_str = f'-o {output_path} -n {model} --device cpu --mp3 --mp3-bitrate=320 "{file_path}"'
+    opts_str = f'-o {output_path} -n {model} --device cpu --mp3 --mp3-bitrate=192 "{file_path}"'
 
     opts = shlex.split(opts_str)
     os.environ["PATH"] = (

@@ -124,13 +124,15 @@ def main():
             save_uploaded_file(file_upload, save_dir=AUDIO_DIR)
 
         songs = [""] + songs
+        if st.session_state["song"] in songs:
+            index = songs.index(st.session_state["song"])
+        else:
+            index = 0
         st.session_state["song"] = st.selectbox(
             "Or choose a preloaded audio track",
             songs,
             key="audio1",
-            index=0
-            if st.session_state["song"] == ""
-            else songs.index(st.session_state["song"]),
+            index=index,
         )
         if st.session_state["song"]:
             st.rerun()
