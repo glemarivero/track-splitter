@@ -1,3 +1,4 @@
+import datetime
 import os
 import shlex
 import tarfile
@@ -9,6 +10,7 @@ from demucs.separate import main as demucs_main
 
 in_path = "./inputs"
 out_path = "./separated/"
+MAX_TIME_LOCK_IN_SECONDS = 1000
 
 
 def timeit(func):
@@ -141,3 +143,31 @@ def download_from_yt(url: str, input_dir: str) -> str:
         # Replace extension with .mp3
         mp3_file = os.path.basename(os.path.splitext(original_file)[0] + ".mp3")
         return mp3_file
+
+
+def lock_file():
+    # creates a lock file with the current time
+    now = datetime.datetime.now()
+    with open("/tmp/lock", "w") as f:
+        f.write(now.isoformat())
+
+
+def lock_remove():
+    # removes the lock file if it exists
+    if os.path.exists("/tmp/lock"):
+        os.remove("/tmp/lock")
+
+
+def lock_exists(max_time_lock_in_seconds=MAX_TIME_LOCK_IN_SECONDS):
+    # checks if the lock file exists and when it was created
+    now = datetime.datetime.now()
+    if os.path.exists("/tmp/lock"):
+        with open("/tmp/lock", "r") as f:
+            created_time = datetime.datetime.fromisoformat(f.read().strip())
+        if (now - created_time).total_seconds() > max_time_lock_in_seconds:
+            lock_remove()
+            return False
+        else:
+            return True
+    else:
+        return False

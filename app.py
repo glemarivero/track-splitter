@@ -8,6 +8,7 @@ from utils import (
     download_from_yt,
     get_file_path,
     install_ffmpeg_from_url,
+    lock_file,
     separate_tracks,
 )
 
@@ -132,23 +133,24 @@ def main():
             )
     except Exception:
         exists = False
-        if song and st.button("Split tracks"):
-            if not os.path.exists("/tmp/lock"):
-                with open("/tmp/lock", "w") as f:
-                    f.write("locked")
+        if not os.path.exists("/tmp/lock"):
+            if song and st.button("Split tracks"):
+                file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
+                lock_file()
+                st.audio(file_path)
                 separate_tracks(
-                    os.path.join(AUDIO_DIR, st.session_state["song"]),
-                    OUTPUT_PATH,
+                    file_path=file_path,
+                    output_path=OUTPUT_PATH,
                     ffmpeg_path=st.session_state["ffmpeg_path"],
                     model=model,
                 )
                 os.remove("/tmp/lock")
+                exists = True
             else:
-                st.warning("Please wait a moment before trying again.")
-            exists = True
-            st.rerun()
+                exists = False
         else:
-            return
+            st.warning("Please wait a moment before trying again.")
+            exists = False
     if exists:
         st.header(song)
         display_audio(song=song, stems=loaded_stems, model=model)
