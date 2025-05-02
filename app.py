@@ -136,10 +136,11 @@ def main():
     except Exception:
         exists = False
         if not lock_exists():
+            file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
+            audio_placeholder = st.empty()
+            audio_placeholder.audio(file_path)
             if song and st.button("Split tracks"):
-                file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
                 lock_file()
-                st.audio(file_path)
                 separate_tracks(
                     file_path=file_path,
                     output_path=OUTPUT_PATH,
@@ -148,6 +149,7 @@ def main():
                 )
                 lock_remove()
                 exists = True
+                audio_placeholder.empty()
             else:
                 exists = False
         else:
