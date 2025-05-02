@@ -135,7 +135,7 @@ def main():
             )
     except Exception:
         exists = False
-        if not lock_exists():
+        if not lock_exists() and song:
             file_path = os.path.join(AUDIO_DIR, st.session_state["song"])
             audio_placeholder = st.empty()
             audio_placeholder.audio(file_path)
