@@ -11,6 +11,7 @@ from utils import (
     lock_exists,
     lock_file,
     lock_remove,
+    read_version,
     separate_tracks,
 )
 
@@ -37,10 +38,11 @@ def save_uploaded_file(uploaded_file, save_dir=AUDIO_DIR):
 
 
 def footer():
+    version = read_version()
     st.markdown(
-        """
+        f"""
     <style>
-    .footer {
+    .footer {{
         position: fixed;
         bottom: 10%;
         left: 0;
@@ -51,19 +53,20 @@ def footer():
         background-color: rgba(240, 240, 240, 0.9);
         font-size: 1rem;
         border-top: 0.1rem solid #ddd;
-    }
-    @media (max-width: 768px) {
-        .footer {
+    }}
+    @media (max-width: 768px) {{
+        .footer {{
             font-size: 0.9rem;
             padding: 2%;
-        }
-    }
-    .audio-section {
+        }}
+    }}
+    .audio-section {{
         margin-bottom: 10px; /* Reduce space below audio controllers */
-    }
+    }}
     </style>
     <div class="footer">
         Made with ❤️ by Gabriel Lema<br>
+        Version: {version} <br>
         Powered by <a href="https://github.com/facebookresearch/demucs" target="_blank">Demucs</a> for audio track separation.
     </div>
     """,

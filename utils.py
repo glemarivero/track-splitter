@@ -175,3 +175,7 @@ def lock_exists(max_time_lock_in_seconds=MAX_TIME_LOCK_IN_SECONDS):
             return True
     else:
         return False
+
+
+def read_version():
+    return open("VERSION").read().strip()
