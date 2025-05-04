@@ -110,13 +110,15 @@ def main():
             body="ℹ️ Double tap outside the input box after pasting the link if using your phone."
         )
         if yt_song:
-            downloaded_song = download_from_yt(yt_song, input_dir=AUDIO_DIR)
-            if downloaded_song:
-                st.session_state["song"] = (
-                    downloaded_song  # Set downloaded song as default
-                )
-                st.success("Download complete!")
-            else:
+            try:
+                downloaded_song = download_from_yt(yt_song, input_dir=AUDIO_DIR)
+                if downloaded_song:
+                    st.session_state["song"] = (
+                        downloaded_song  # Set downloaded song as default
+                    )
+                    st.success("Download complete!")
+                    st.rerun()
+            except Exception:
                 st.error("Failed to download the song.")
 
         if file_upload is not None:
