@@ -79,7 +79,7 @@ input[type="range"] {{
 </div>
 <div>
     <button onclick="playAll()">▶️ Play</button>
-    <button onclick="pauseAll()">⏸ Pause</button>
+    <button onclick="pauseAll()">⏸️ Pause</button>
 </div>
 
 <div style="margin-top: 5%;">

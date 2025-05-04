@@ -102,7 +102,6 @@ def main():
         st.session_state["song"] = ""
     song = st.session_state.get("song", "")
 
-    songs = [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
     if not st.session_state["song"]:
         file_upload = st.file_uploader("Choose your own song!")
         yt_song = st.text_input("Enter YouTube link:")
@@ -117,7 +116,6 @@ def main():
                         downloaded_song  # Set downloaded song as default
                     )
                     st.success("Download complete!")
-                    st.rerun()
             except Exception:
                 st.error("Failed to download the song.")
 
@@ -125,6 +123,7 @@ def main():
             st.session_state["song"] = file_upload.name  # Set uploaded file as default
             save_uploaded_file(file_upload, save_dir=AUDIO_DIR)
 
+        songs = [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
         songs = [""] + songs
         if st.session_state["song"] in songs:
             index = songs.index(st.session_state["song"])
@@ -142,13 +141,12 @@ def main():
         if st.button("Go back"):
             st.session_state["song"] = ""
             st.rerun()
+        songs = [path for path in os.listdir(AUDIO_DIR) if not path.startswith(".")]
         st.session_state["song"] = st.selectbox(
             "Choose a preloaded audio track",
             songs,
             key="audio1",
-            index=0
-            if st.session_state["song"] == ""
-            else songs.index(st.session_state["song"]),
+            index=songs.index(st.session_state["song"]),
         )
         st.header(st.session_state["song"])
         loaded_stems = dict()
