@@ -11,7 +11,6 @@ STEMS_EMOJIS = {
 
 
 def display_audio(song, stems, model):
-    # Consolidated HTML and JavaScript for audio controls and playback
     src_stems = {key: f"data:audio/mp3;base64,{value}" for key, value in stems.items()}
 
     audio_columns = ""
@@ -27,6 +26,7 @@ def display_audio(song, stems, model):
             </div>
         </div>
         """
+
     html_code = f"""
 <style>
 .audio-controls {{
@@ -49,7 +49,7 @@ def display_audio(song, stems, model):
     text-align: center;
 }}
 input[type="range"] {{
-    width: 100%; /* Ensure sliders take full width */
+    width: 100%;
 }}
 @media (max-width: 768px) {{
     .audio-controls {{
@@ -60,10 +60,10 @@ input[type="range"] {{
         min-width: 100%;
     }}
     .audio-control {{
-        width: 90%; /* Adjust control width for smaller screens */
+        width: 90%;
     }}
     input[type="range"] {{
-        width: 100%; /* Ensure sliders remain responsive */
+        width: 100%;
     }}
 }}
 </style>
@@ -80,6 +80,12 @@ input[type="range"] {{
 <div>
     <button onclick="playAll()">▶️ Play</button>
     <button onclick="pauseAll()">⏸️ Pause</button>
+</div>
+
+<!-- Playback Speed Control -->
+<div style="margin-top: 20px; text-align: center;">
+    <label for="speedControl">⏩ Playback Speed: <span id="speedValue">1.00x</span></label><br>
+    <input type="range" id="speedControl" min="0.25" max="1" step="0.05" value="1" style="width: 50%;">
 </div>
 
 <div style="margin-top: 5%;">
@@ -115,9 +121,20 @@ const endMarker = document.getElementById("end-marker");
 const selectedArea = document.getElementById("selected-area");
 const markersContainer = document.getElementById("markers");
 
+const speedControl = document.getElementById("speedControl");
+const speedValue = document.getElementById("speedValue");
+
+speedControl.addEventListener("input", () => {{
+    const rate = parseFloat(speedControl.value);
+    speedValue.textContent = `${{rate.toFixed(2)}}x`;
+    Object.values(audioElements).forEach(audio => {{
+        audio.playbackRate = rate;
+    }});
+}});
+
 let seekbarWidth = seekbar.offsetWidth;
 let maxDuration = 0;
-let loopStartTime = 0; // Variable to track the latest position for playback start
+let loopStartTime = 0;
 
 function initializeAudio() {{
     if (maxDuration === 0) {{
@@ -126,16 +143,15 @@ function initializeAudio() {{
         seekbarWidth = seekbar.offsetWidth;
         updateSelectedArea();
         updateTimeDisplay(0);
-        loopStartTime = getTimeFromMarker(startMarker); // Ensure loopStartTime is initialized
+        loopStartTime = getTimeFromMarker(startMarker);
     }}
 }}
 
-// Add event listeners to update duration when metadata is loaded
 Object.values(audioElements).forEach(audio => {{
     audio.addEventListener("loadedmetadata", () => {{
         maxDuration = Math.min(...Object.values(audioElements).map(audio => audio.duration || 0));
         seekbar.max = maxDuration;
-        updateTimeDisplay(0); // Update the displayed total duration
+        updateTimeDisplay(0);
     }});
 }});
 
@@ -165,7 +181,7 @@ function updateSelectedArea() {{
 }}
 
 function setAudioPosition(time) {{
-    initializeAudio(); // Ensure audio is initialized before setting position
+    initializeAudio();
     Object.values(audioElements).forEach(audio => {{
         audio.currentTime = time;
     }});
@@ -184,7 +200,6 @@ function playAll() {{
     seekbarWidth = seekbar.offsetWidth;
     updateSelectedArea();
 
-    // Use the latest loopStartTime for playback
     setAudioPosition(loopStartTime);
 
     Object.values(audioElements).forEach(audio => {{
@@ -198,8 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {{
     seekbarWidth = seekbar.offsetWidth;
     updateSelectedArea();
     updateTimeDisplay(0);
-
-    // Initialize loopStartTime to the position of the start marker
     loopStartTime = getTimeFromMarker(startMarker);
 }});
 
@@ -207,32 +220,30 @@ function pauseAll() {{
     Object.values(audioElements).forEach(audio => audio.pause());
 }}
 
-// Dragging start marker — update immediately and play from the new position
 startMarker.addEventListener("drag", (event) => {{
     if (event.clientX > 0) {{
-        initializeAudio(); // Ensure audio is initialized before interacting with markers
+        initializeAudio();
         const position = event.clientX - markersContainer.getBoundingClientRect().left;
-        loopStartTime = updateMarkerPosition(startMarker, position); // Store start time
-        setAudioPosition(loopStartTime); // Update current time
+        loopStartTime = updateMarkerPosition(startMarker, position);
+        setAudioPosition(loopStartTime);
         Object.values(audioElements).forEach(audio => {{
-            audio.play(); // Start playing immediately
+            audio.play();
         }});
     }}
 }});
 
 startMarker.addEventListener("dragend", (event) => {{
     if (event.clientX > 0) {{
-        initializeAudio(); // Ensure audio is initialized before interacting with markers
+        initializeAudio();
         const position = event.clientX - markersContainer.getBoundingClientRect().left;
-        loopStartTime = updateMarkerPosition(startMarker, position); // Store start time
-        setAudioPosition(loopStartTime); // Update current time
+        loopStartTime = updateMarkerPosition(startMarker, position);
+        setAudioPosition(loopStartTime);
         Object.values(audioElements).forEach(audio => {{
-            audio.play(); // Start playing immediately
+            audio.play();
         }});
     }}
 }});
 
-// Add touch support for start marker
 startMarker.addEventListener("touchmove", (event) => {{
     const touch = event.touches[0];
     if (touch) {{
@@ -263,7 +274,6 @@ startMarker.addEventListener("touchend", (event) => {{
     }}
 }});
 
-// Add touch support for end marker
 endMarker.addEventListener("drag", (event) => {{
     if (event.clientX > 0) {{
         const position = event.clientX - markersContainer.getBoundingClientRect().left;
@@ -315,7 +325,7 @@ setInterval(() => {{
 }}, 100);
 
 seekbar.addEventListener("input", () => {{
-    initializeAudio(); // Ensure audio is initialized before seeking
+    initializeAudio();
     setAudioPosition(seekbar.value);
 }});
 
@@ -328,5 +338,5 @@ Object.entries(volumeControls).forEach(([stem, control]) => {{
 """
 
     st.components.v1.html(
-        html_code, height=400 if len(stems) > 4 else 310, scrolling=True
+        html_code, height=460 if len(stems) > 4 else 370, scrolling=True
     )
