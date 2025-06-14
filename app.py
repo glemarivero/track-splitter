@@ -89,7 +89,6 @@ MODELS = {
 def main():
     st.title("Audio Track Splitter")
     ffmpeg_path = os.path.dirname(install_ffmpeg_from_url())
-    print(ffmpeg_path)
     st.session_state["ffmpeg_path"] = ffmpeg_path
     model = st.selectbox(
         label="Choose a Demucs model",
